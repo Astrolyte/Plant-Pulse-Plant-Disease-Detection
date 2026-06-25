@@ -1,0 +1,449 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="images/plantpulse_Logo.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <title>plantpulse - Predict the Market</title>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="index.html" class="nav-logo">
+                <i class="ri-line-chart-line nav-logo-icon"></i> plantpulse
+            </a>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link active-link">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#predictions" class="nav-link">Predictions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#data" class="nav-link">Data Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#faqs" class="nav-link">FAQs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#contact" class="nav-link">Contact</a>
+                    </li>
+                </ul>
+
+                <div class="nav-close" id="nav-close">
+                    <i class="ri-close-line"></i>
+                </div>
+            </div>
+
+            <div class="nav-btns">
+                <!-- THEME CHANGE BUTTON -->
+                <i class="ri-moon-line change-theme" id="theme-button"></i>
+
+                <div class="nav-toggle" id="nav-toggle">
+                    <i class="ri-menu-line"></i>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="main">
+
+        <!-- HOME -->
+        <section class="home" id="home">
+            <div class="home-container container grid">
+                <img src="{{ url_for('static', filename='images/plantpulse_Logo.png') }}" alt="" class="home-img">
+
+                <div class="home-data">
+                    <h1 class="home-title">
+                        Predict plant Diseases <br> with Confidence
+                    </h1>
+                    <p class="home-description">
+                    Get insights, make informed decisions, and stay ahead in the market.
+                    </p>
+                    <a href="#about" class="button button-flex">Explore <i
+                            class="ri-arrow-right-down-line button-icon"></i></a>
+                </div>
+
+                <div class="home-social">
+                    <span class="home-social-follow">Follow Us</span>
+
+                    <div class="home-social-links">
+                        <a href="https://www.facebook.com/" class="home-social-link">
+                            <i class="ri-facebook-fill"></i>
+                        </a>
+                        <a href="https://www.instagram.com/" class="home-social-link">
+                            <i class="ri-instagram-line"></i>
+                        </a>
+                        <a href="https://x.com/home" class="home-social-link">
+                            <i class="ri-twitter-fill"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section class="about section container" id="about">
+            <div class="about-container grid">
+                <img src="images/stock_prediction_graph.jpg" alt="" class="about-img">
+
+                <div class="about-data">
+                    <h2 class="section-title about-title">
+                        Who we really are & <br> why choose us
+                    </h2>
+
+                    <p class="about-description">
+                        Our advanced ML models predict plant price Diseases using data-driven insights and market analysis.
+                    </p>
+
+                    <div class="about-details">
+                        <p class="about-details-description">
+                            <i class="ri-checkbox-fill about-details-icon"></i>
+                            Accurate and insightful plant price predictions.
+                        </p>
+                        <p class="about-details-description">
+                            <i class="ri-checkbox-fill about-details-icon"></i>
+                            User-friendly interface for seamless use.
+                        </p>
+                        <p class="about-details-description">
+                            <i class="ri-checkbox-fill about-details-icon"></i>
+                         Real-time data analysis for smart decisions.   
+                        </p>
+                        <p class="about-details-description">
+                            <i class="ri-checkbox-fill about-details-icon"></i>
+                           Ensure timely insights to maximize your investments.
+                        </p>
+                    </div>
+
+                    <a href="#steps-container" class="button-link button-flex">
+                        TRY NOW <i class="ri-arrow-right-down-line button-icon"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="steps section container" id="steps-container">
+            <div class="steps-bg">
+                <h2 class="section-title-center steps-title">
+                    Steps to Diagnose <br> Plant Health
+                </h2>
+        
+                <div class="steps-container grid">
+                    <!-- Step 1 -->
+                    <div class="steps-card">
+                        <div class="steps-card-number">01</div>
+                        <h3 class="steps-card-title">Enter Plant Name</h3>
+                        <p class="steps-card-description">
+                            Provide the name of the plant you want to analyze (e.g., Tomato, Rose, etc.).
+                        </p>
+                        <input type="text" id="plant-name" class="button" placeholder="Enter Plant Name">
+                    </div>
+        
+                    <!-- Step 2 -->
+                    <div class="steps-card">
+                        <div class="steps-card-number">02</div>
+                        <h3 class="steps-card-title">Upload Plant Image</h3>
+                        <p class="steps-card-description">
+                            Upload a clear image of the plant or leaf for accurate disease detection.
+                        </p>
+        
+                        <div class="upload-container">
+                            <button class="button button-flex upload-button" id="upload-btn">
+                                Upload Image
+                                <i class="ri-upload-cloud-line button-icon"></i>
+                            </button>
+        
+                            <input type="file" id="image-input" accept="image/*" style="display: none;">
+                            <img id="image-preview" style="margin-top: 1rem; max-width: 100%; display: none;" alt="Uploaded Image Preview" />
+                        </div>
+                    </div>
+        
+                    <!-- Step 3 -->
+                    <div class="steps-card">
+                        <div class="steps-card-number">03</div>
+                        <h3 class="steps-card-title">Get Diagnosis</h3>
+                        <p class="steps-card-description">
+                            Visualize detected plant diseases, health conditions, and actionable care tips.
+                        </p>
+                        <button class="button button-flex" id="diagnose-btn" disabled>Diagnose Plant</button>
+                        <div id="results" class="results-container"></div>
+                        <button id="more-info-btn" class="button" style="display: none;">More Insights</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+
+        <!-- PRODUCTS -->
+        <section class="product section container" id="products">
+            <h2 class="section-title-center">
+                Check out our <br> Prediction Results
+            </h2>
+        
+            <p class="product-description">
+                See sample disease detection results for popular plants using our CNN-based model.
+            </p>
+        
+            <div class="product-container grid">
+                <article class="product-card">
+                    <div class="product-circle"></div>
+        
+                    <img src="images/leaf_tomato_blight.jpg" alt="" class="product-img">
+        
+                    <h3 class="product-title">Tomato Plant</h3>
+                    <span class="product-result">Early Blight Detected</span>
+                </article>
+        
+                <article class="product-card">
+                    <div class="product-circle"></div>
+        
+                    <img src="images/leaf_potato_scab.jpg" alt="" class="product-img">
+        
+                    <h3 class="product-title">Potato Plant</h3>
+                    <span class="product-result">Common Scab Detected</span>
+                </article>
+        
+                <article class="product-card">
+                    <div class="product-circle"></div>
+        
+                    <img src="images/leaf_healthy_corn.jpg" alt="" class="product-img">
+        
+                    <h3 class="product-title">Corn Plant</h3>
+                    <span class="product-result">Healthy Leaf</span>
+                </article>
+            </div>
+        </section>
+        
+
+<!-- QUESTIONS -->
+<section class="questions section" id="faqs">
+    <h2 class="section-title-center questions-title container">
+        Common Questions <br> About Plant Disease Detection
+    </h2>
+
+    <div class="questions-container container grid">
+        <div class="questions-group">
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        How accurate is the disease detection model?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        Our CNN model achieves over 90% accuracy on well-lit and focused leaf images, but performance may vary based on image quality and plant type.
+                    </p>
+                </div>
+            </div>
+
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        What kind of data does the model require?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        The model requires clear images of plant leaves, preferably taken in natural lighting without blur or shadows.
+                    </p>
+                </div>
+            </div>
+
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        How do I know if my plant is healthy or diseased?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        The model classifies the leaf image and provides a result such as "Healthy" or a specific disease name along with treatment suggestions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-group">
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        Is the plant detection tool free to use?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        Yes, this plant health detection tool is completely free for students, farmers, and gardening enthusiasts.
+                    </p>
+                </div>
+            </div>
+
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        Can I upload multiple images for detection?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        Currently, the system supports one image at a time. Support for bulk image upload is coming soon.
+                    </p>
+                </div>
+            </div>
+
+            <div class="questions-item">
+                <header class="questions-header">
+                    <i class="ri-add-line questions-icon"></i>
+                    <h3 class="questions-item-title">
+                        How can I improve detection results?
+                    </h3>
+                </header>
+                <div class="questions-content">
+                    <p class="questions-description">
+                        Ensure the leaf image is in focus, well-lit, and captured against a plain background for the best model accuracy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- CONTACT -->
+<section class="contact section container" id="contact">
+    <div class="contact-container grid">
+        <div class="contact-box">
+            <h2 class="section-title">
+                Reach out to us today <br> via any of the given information
+            </h2>
+
+            <div class="contact-data">
+                <div class="contact-infomation">
+                    <h3 class="contact-subtitle">Call us for instant support</h3>
+                    <span class="contact-description">
+                        <i class="ri-phone-line contact-icon"></i>
+                        9999446645
+                    </span>
+                </div>
+
+                <div class="contact-infomation">
+                    <h3 class="contact-subtitle">Write us by mail</h3>
+                    <span class="contact-description">
+                        <i class="ri-mail-line"></i>
+                        plantpulse@email.com
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <form action="" class="contact-form">
+            <div class="contact-inputs">
+                <div class="contact-content">
+                    <input type="email" placeholder=" " class="contact-input">
+                    <label for="" class="contact-label">Email</label>
+                </div>
+
+                <div class="contact-content">
+                    <input type="text" placeholder=" " class="contact-input">
+                    <label for="" class="contact-label">Subject</label>
+                </div>
+
+                <div class="contact-content contact-area">
+                    <textarea name="message" placeholder=" " class="contact-input"></textarea>
+                    <label for="" class="contact-label">Message</label>
+                </div>
+            </div>
+
+            <button class="button button-flex">
+                Send Message
+                <i class="ri-arrow-right-up-line button-icon"></i>
+            </button>
+        </form>
+    </div>
+</section>
+    <!-- FOOTER -->
+    <footer class="footer section">
+        <div class="footer-container container grid">
+            <div class="footer-content">
+                <a href="#home" class="footer-logo">
+                    <i class="ri-bar-chart-line footer-logo-icon"></i> plantpulse
+                </a>
+
+                <h3 class="footer-title">
+                    Subscribe to our Newsletter <br> for Plant Insights
+                </h3>
+
+                <div class="footer-subscribe">
+                    <input type="email" placeholder="Enter your email" class="footer-input">
+
+                    <button class="button button-flex footer-button">
+                        Subscribe
+                        <i class="ri-arrow-right-up-line button-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer-content">
+                <h3 class="footer-title">Our Address</h3>
+
+                <ul class="footer-data">
+                    <li class="footer-information">Jaypee Institute of Information Technology</li>
+                    <li class="footer-information">Sec-128</li>
+                    <li class="footer-information">Noida</li>
+                </ul>
+            </div>
+
+            <div class="footer-content">
+                <h3 class="footer-title">Contact Us</h3>
+
+                <ul class="footer-data">
+                    <li class="footer-information">9999446645</li>
+
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/" class="footer-social-link">
+                            <i class="ri-facebook-fill"></i>
+                        </a>
+                        <a href="https://www.instagram.com/" class="footer-social-link">
+                            <i class="ri-instagram-line"></i>
+                        </a>
+                        <a href="https://x.com/home" class="footer-social-link">
+                            <i class="ri-twitter-fill"></i>
+                        </a>
+                    </div>
+                </ul>
+            </div>
+
+            <div class="footer-content">
+                <h3 class="footer-title">Smart Investing, Informed Decisions</h3>
+
+                <div class="footer-cards">
+                    <img src="images/plantpulseLogo.png" alt="" class="footer-card">
+                </div>
+            </div>
+        </div>
+
+        <p class="footer-copy">&#169;plantpulse. All rights reserved</p>
+    </footer>
+
+    <!-- SCROLL UP -->
+    <a href="#home" class="scrollup" id="scroll-up">
+        <i class="ri-arrow-up-fill scrollup-icon"></i>
+    </a>
+
+    <!-- <script src="C:\Users\Aditya\Documents\Minor_Project\scroll.min.js"></script> -->
+    <script src="{{ url_for('static', filename='scroll.min.js') }}"></script>
+    <!-- <script src="C:\Users\Aditya\Documents\Minor_Project\style.js"></script> -->
+    <script src="{{ url_for('static', filename='style.js') }}"></script>
+</body>
+
+</html>

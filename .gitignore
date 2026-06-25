@@ -1,0 +1,76 @@
+# ==============================
+# Python
+# ==============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ==============================
+# TensorFlow / Keras Models
+# ==============================
+*.h5
+*.keras
+*.pb
+
+# If you want to keep ONE model in Git,
+# comment out the above and ignore only the others.
+
+# ==============================
+# Temporary Files
+# ==============================
+temp_*
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# ==============================
+# Dataset
+# ==============================
+Tomato/Train/
+Tomato/Test/
+Tomato/Val/
+Tomato/evidence/
+
+# Ignore large datasets
+*.zip
+*.tar
+*.gz
+
+# ==============================
+# OS Files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Environment Variables
+# ==============================
+.env
+
+# ==============================
+# Python Build Files
+# ==============================
+build/
+dist/
+*.egg-info/
+
+# ==============================
+# Cache
+# ==============================
+.pytest_cache/
+.mypy_cache/
+.cache/
