@@ -275,7 +275,6 @@ document.addEventListener("DOMContentLoaded", function () {
             selectedPlantName
         );
 
-
         try {
 
             const response = await fetch(
@@ -286,12 +285,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             );
 
-
             const data = await response.json();
 
-
             // Handle HTTP errors
-
 
             if (!response.ok) {
 
@@ -311,15 +307,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Validate response
 
-
             if (!data.prediction) {
 
-                resultsDiv.innerHTML =
-                    "<p>No prediction received.</p>";
-
+                resultsDiv.innerHTML = "<p>No prediction received.</p>";
                 return;
             }
-
 
             // Extract prediction
 
@@ -327,20 +319,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const confidence = data.prediction.confidence;
 
-
             diseaseData = disease;
-
 
             // Display result
 
             const confidencePercentage = (confidence * 100).toFixed(2);
 
-
             const recommendation =
                 disease === "Healthy"
                     ? "Your plant looks healthy! Continue regular care."
                     : "Consult a plant specialist for targeted treatment.";
-
 
             resultsDiv.innerHTML = `
 
@@ -376,7 +364,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
             `;
-
 
             // Show more information button
             moreInfoBtn.style.display ="inline-block";
