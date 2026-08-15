@@ -136,142 +136,444 @@ const sr = ScrollReveal({
   duration: 2500,
   delay: 400,
 });
+
 document.addEventListener("DOMContentLoaded", function () {
-  const uploadBtn = document.getElementById("upload-btn");
-  const imageInput = document.getElementById("image-input");
-  const diagnoseBtn = document.getElementById("diagnose-btn");
-  const plantNameInput = document.getElementById("plant-name");
-  const resultsDiv = document.getElementById("results");
-  const moreInfoBtn = document.getElementById("more-info-btn");
-  const imagePreview = document.getElementById("image-preview");
+    const uploadBtn = document.getElementById("upload-btn");
+    const imageInput = document.getElementById("image-input");
+    const diagnoseBtn = document.getElementById("diagnose-btn");
+    const plantNameInput = document.getElementById("plant-name");
+    const resultsDiv = document.getElementById("results");
+    const moreInfoBtn = document.getElementById("more-info-btn");
+    const imagePreview = document.getElementById("image-preview");
 
-  let selectedPlantName = "";
-  let selectedFile = null;
-  let diseaseData = null; // Store the disease result data
+    let selectedPlantName = "";
+    let selectedFile = null;
+    let diseaseData = null;
 
-  plantNameInput.addEventListener("input", function () {
-    selectedPlantName = plantNameInput.value.trim();
-    updateDiagnoseButtonState();
-  });
+    // Plant name input
 
-  uploadBtn.addEventListener("click", function () {
-    imageInput.click();
-  });
+    plantNameInput.addEventListener("input", function () {
+        selectedPlantName = plantNameInput.value.trim();
+        updateDiagnoseButtonState();
+    });
 
-  imageInput.addEventListener("change", function (event) {
-    const file = event.target.files[0];
+    // Upload button
 
-    if (file) {
-      selectedFile = file;
-      updateDiagnoseButtonState();
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
+
+    uploadBtn.addEventListener("click", function () {
+        imageInput.click();
+    });
+
+    // Image selection
+
+
+    imageInput.addEventListener("change", function (event) {
+
+        const file = event.target.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+
+            resultsDiv.innerHTML ="<p>Please select a valid image file.</p>";
+
+            imageInput.value = "";
+            selectedFile = null;
+
+            updateDiagnoseButtonState();
+
+            return;
+        }
+
+        // Validate file size - 5 MB
+        const maxSize = 5 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+
+            resultsDiv.innerHTML ="<p>Image size must be less than 5 MB.</p>";
+
+            imageInput.value = "";
+            selectedFile = null;
+
+            updateDiagnoseButtonState();
+
+            return;
+        }
+
+        selectedFile = file;
+
+        updateDiagnoseButtonState();
+
+        // Preview image
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = "block";
+
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+
+    // Diagnose button state
+
+
+    function updateDiagnoseButtonState() {
+
+        diagnoseBtn.disabled = !(
+            selectedPlantName &&
+            selectedFile
+        );
+
     }
-  });
 
-  function updateDiagnoseButtonState() {
-    diagnoseBtn.disabled = !(selectedPlantName && selectedFile);
-  }
 
-  diagnoseBtn.addEventListener("click", function () {
-    if (!selectedPlantName || !selectedFile) {
-      alert("Please enter a plant name and upload an image.");
-      return;
-    }
+    // Prediction
 
-    resultsDiv.innerHTML = "<p>Analyzing... Please wait.</p>";
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("plant_type", selectedPlantName);
+    diagnoseBtn.addEventListener("click", async function () {
 
-    fetch("/api/predict", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.disease) {
-          diseaseData = data.disease;
-          resultsDiv.innerHTML = `
-                    <p><strong>Analysis Result:</strong> ${data.disease}</p>
-                    <p><strong>Recommended Action:</strong> 
-                    ${
-                      data.disease === "Healthy"
-                        ? "Your plant looks healthy! Continue regular care."
-                        : "Consult a plant specialist for targeted treatment."
-                    }
+        if (!selectedPlantName || !selectedFile) {
+
+            alert(
+                "Please enter a plant name and upload an image."
+            );
+
+            return;
+        }
+
+
+        // Disable button during inference
+        diagnoseBtn.disabled = true;
+
+        diagnoseBtn.textContent = "Analyzing...";
+
+        resultsDiv.innerHTML ="<p>Analyzing image... Please wait.</p>";
+
+        moreInfoBtn.style.display = "none";
+
+        diseaseData = null;
+
+        // Create request
+
+
+        const formData = new FormData();
+
+        formData.append(
+            "file",
+            selectedFile
+        );
+
+        formData.append(
+            "plant_type",
+            selectedPlantName
+        );
+
+
+        try {
+
+            const response = await fetch(
+                "/api/predict",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+
+            const data = await response.json();
+
+
+            // Handle HTTP errors
+
+
+            if (!response.ok) {
+
+                resultsDiv.innerHTML = `
+                    <p>
+                        <strong>Error:</strong>
+                        ${data.error || "Prediction failed."}
+                    </p>
+                    <p>
+                        Request ID:
+                        ${data.request_id || "N/A"}
                     </p>
                 `;
-          moreInfoBtn.style.display = "inline-block";
-        } else if (data.error) {
-          resultsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
-        } else {
-          resultsDiv.innerHTML = "<p>No result received. Please try again.</p>";
-        }
-      })
-      .catch((error) => {
-        console.error("Error analyzing plant:", error);
-        resultsDiv.innerHTML =
-          "<p>Error analyzing plant. Please check your connection and try again.</p>";
-      });
-  });
 
-  moreInfoBtn.addEventListener("click", function () {
-    if (diseaseData) {
-      const diseaseDetails = getDiseaseDetails(diseaseData);
-      resultsDiv.innerHTML += `
-                <div class="disease-details">
-                    <h3>More Information About ${diseaseData}:</h3>
-                    <p><strong>Symptoms:</strong> ${diseaseDetails.symptoms}</p>
-                    <p><strong>Treatment:</strong> ${diseaseDetails.treatment}</p>
-                    <p><strong>Where to Buy Medicines:</strong> ${diseaseDetails.medicineStores}</p>
+                return;
+            }
+
+            // Validate response
+
+
+            if (!data.prediction) {
+
+                resultsDiv.innerHTML =
+                    "<p>No prediction received.</p>";
+
+                return;
+            }
+
+
+            // Extract prediction
+
+            const disease = data.prediction.disease;
+
+            const confidence = data.prediction.confidence;
+
+
+            diseaseData = disease;
+
+
+            // Display result
+
+            const confidencePercentage = (confidence * 100).toFixed(2);
+
+
+            const recommendation =
+                disease === "Healthy"
+                    ? "Your plant looks healthy! Continue regular care."
+                    : "Consult a plant specialist for targeted treatment.";
+
+
+            resultsDiv.innerHTML = `
+
+                <div class="prediction-result">
+
+                    <p>
+                        <strong>Plant:</strong>
+                        ${selectedPlantName}
+                    </p>
+
+                    <p>
+                        <strong>Analysis Result:</strong>
+                        ${disease}
+                    </p>
+
+                    <p>
+                        <strong>Confidence:</strong>
+                        ${confidencePercentage}%
+                    </p>
+
+                    <p>
+                        <strong>Recommended Action:</strong>
+                        ${recommendation}
+                    </p>
+
+                    <p>
+                        <small>
+                            Request ID:
+                            ${data.request_id}
+                        </small>
+                    </p>
+
                 </div>
+
             `;
+
+
+            // Show more information button
+            moreInfoBtn.style.display ="inline-block";
+
+
+        } catch (error) {
+
+            console.error(
+                "Error analyzing plant:",
+                error
+            );
+
+            resultsDiv.innerHTML = `
+                <p>
+                    <strong>Error analyzing plant.</strong>
+                </p>
+                <p>
+                    Please check your connection
+                    and try again.
+                </p>
+            `;
+
+        } finally {
+
+            // Re-enable button
+            diagnoseBtn.disabled = !(
+                selectedPlantName &&
+                selectedFile
+            );
+
+            diagnoseBtn.textContent ="Diagnose";
+
+        }
+
+    });
+
+
+    // ------------------------------------------
+    // More information
+    // ------------------------------------------
+
+    moreInfoBtn.addEventListener(
+        "click",
+        function () {
+
+            if (!diseaseData) {
+                return;
+            }
+
+
+            const diseaseDetails =
+                getDiseaseDetails(diseaseData);
+
+
+            if (!diseaseDetails.symptoms) {
+
+                resultsDiv.innerHTML += `
+                    <div class="disease-details">
+                        <p>
+                            No additional information
+                            available for this disease.
+                        </p>
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            resultsDiv.innerHTML += `
+
+                <div class="disease-details">
+
+                    <h3>
+                        More Information About
+                        ${diseaseData}
+                    </h3>
+
+                    <p>
+                        <strong>Symptoms:</strong>
+                        ${diseaseDetails.symptoms}
+                    </p>
+
+                    <p>
+                        <strong>Treatment:</strong>
+                        ${diseaseDetails.treatment}
+                    </p>
+
+                    <p>
+                        <strong>Where to Buy Medicines:</strong>
+                        ${diseaseDetails.medicineStores}
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+    // Disease information
+
+
+    function getDiseaseDetails(disease) {
+
+        const diseaseInfo = {
+
+            "Healthy": {
+
+                symptoms:
+                    "No symptoms. Your plant is healthy.",
+
+                treatment:
+                    "No treatment needed. Keep up regular care.",
+
+                medicineStores:
+                    "Not applicable."
+
+            },
+
+
+            "Early_blight": {
+
+                symptoms:
+                    "Dark spots on leaves with concentric rings.",
+
+                treatment:
+                    "Use fungicides and remove affected leaves.",
+
+                medicineStores:
+                    "Buy fungicides from gardening stores or online."
+
+            },
+
+
+            "Late_blight": {
+
+                symptoms:
+                    "Water-soaked lesions, often leading to plant decay.",
+
+                treatment:
+                    "Use appropriate fungicides or remove affected plants.",
+
+                medicineStores:
+                    "Available at most garden centers."
+
+            },
+
+
+            "Septoria_leaf_spots": {
+
+                symptoms:
+                    "Small, dark brown to black spots with light centers.",
+
+                treatment:
+                    "Remove infected leaves and apply appropriate fungicides.",
+
+                medicineStores:
+                    "Available at gardening and plant-care stores."
+
+            },
+
+
+            "Bacterial_spot": {
+
+                symptoms:
+                    "Water-soaked spots on leaves with yellow halos.",
+
+                treatment:
+                    "Remove affected leaves and use appropriate plant-care treatment.",
+
+                medicineStores:
+                    "Available at specialized plant-care stores."
+
+            },
+
+
+            "Yellow_leaf_curl_virus": {
+
+                symptoms:
+                    "Yellowing and curling of leaves.",
+
+                treatment:
+                    "Remove infected plants to help prevent spread.",
+
+                medicineStores:
+                    "No direct cure; consider resistant plant varieties."
+
+            }
+
+        };
+
+
+        return diseaseInfo[disease] || {};
+
     }
-  });
 
-  function getDiseaseDetails(disease) {
-    const diseaseInfo = {
-      Healthy: {
-        symptoms: "No symptoms. Your plant is healthy.",
-        treatment: "No treatment needed. Keep up regular care.",
-        medicineStores: "Not applicable.",
-      },
-      Early_blight: {
-        symptoms: "Dark spots on leaves with concentric rings.",
-        treatment: "Use fungicides, remove affected leaves.",
-        medicineStores: "Buy fungicides from any gardening store or online.",
-      },
-      Late_blight: {
-        symptoms: "Water-soaked lesions, often leading to plant decay.",
-        treatment: "Use copper-based fungicides or remove affected plants.",
-        medicineStores: "Available at most garden centers.",
-      },
-      Septoria_leaf_spot: {
-        symptoms: "Small, dark brown to black spots with light centers.",
-        treatment: "Remove infected leaves and apply fungicides.",
-        medicineStores: "Find fungicides in gardening stores.",
-      },
-      Bacterial_spot: {
-        symptoms: "Water-soaked spots on leaves with yellow halos.",
-        treatment: "Use copper-based bactericides and remove infected leaves.",
-        medicineStores: "Available in specialized plant care stores.",
-      },
-      Yellow_leaf_curl_virus: {
-        symptoms: "Yellowing and curling of leaves.",
-        treatment: "No cure, remove infected plants to prevent spread.",
-        medicineStores:
-          "No treatment available, purchase resistant plant varieties.",
-      },
-    };
-
-    return diseaseInfo[disease] || {};
-  }
 });
 
 sr.reveal(`.home-data`);

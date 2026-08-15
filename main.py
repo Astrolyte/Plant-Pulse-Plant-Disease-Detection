@@ -1,143 +1,268 @@
-# # from flask import Flask, request, jsonify, send_file
-# # from flask_cors import CORS
-# # import cv2
-# # import tensorflow as tf
-# # from tensorflow import keras
-# # from tensorflow.keras.models import load_model 
-# # from tensorflow.keras.preprocessing.image import load_img, img_to_array
-# # import numpy as np
-# # import os
-# # from io import BytesIO
-
-# # app = Flask(__name__)
-# # CORS(app)
-
-# # physical_devices = tf.config.list_physical_devices('GPU')
-# # for device in physical_devices:
-# #     tf.config.experimental.set_memory_growth(device, True)
-    
-# # # model_path = r'C:\Users\Aditya\Documents\Minor_Project\Tomato\trained_model_retry.h5'
-# # model_path = './trained_model_retry.h5'
-# # model = load_model(model_path)
-
-# # class_names = [
-# #     'Bacterial_spot', 'Early_blight', 'Healthy', 'Late_blight', 'Septoria_leaf_spots', 'Yellow_leaf_curl_virus'
-# # ]
-
-# # def preprocess_image(image_path):
-# #     """
-# #     Reads an image from the given path, preprocesses it for the model,
-# #     and returns both the original image and preprocessed array.
-# #     """
-# #     img = cv2.imread(image_path)
-# #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-# #     image = tf.keras.preprocessing.image.load_img(image_path, target_size=(128, 128)) 
-# #     input_arr = tf.keras.preprocessing.image.img_to_array(image)  
-# #     input_arr = np.array([input_arr]) 
-# #     return img, input_arr
-
-# # @app.route('/api/predict', methods=['POST'])
-# # def predict_disease():
-# #     try:
-# #         if 'file' not in request.files:
-# #             return jsonify({"error": "No file part"}), 400
-
-# #         file = request.files['file']
-# #         if file.filename == '':
-# #             return jsonify({"error": "No selected file"}), 400
-
-# #         file_path = f"./temp_{file.filename}"
-# #         file.save(file_path)
-
-# #         img, input_arr = preprocess_image(file_path)
-
-# #         predictions = model.predict(input_arr)
-# #         result_index = np.argmax(predictions)
-# #         model_prediction = class_names[result_index]
-
-# #         os.remove(file_path)
-
-# #         return jsonify({
-# #             "disease": model_prediction,
-# #             "probabilities": predictions.flatten().tolist()
-# #         })
-
-# #     except Exception as e:
-# #         return jsonify({"error": str(e)}), 500
-
-# # if __name__ == "__main__":
-# #     app.run(host='0.0.0.0', port=5000)
-
-# # BREAKKKKKKKKKKKKKKKKK
-
-
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import cv2
-import tensorflow as tf
-from tensorflow import keras
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from PIL import Image
+from io import BytesIO
+import tensorflow as tf
 import numpy as np
 import os
-from io import BytesIO
+import uuid
+import time
 
-app = Flask(__name__)
-CORS(app)
+###-----------
+# Configuration
+### ----------
 
-physical_devices = tf.config.list_physical_devices('GPU')
-for device in physical_devices:
-    tf.config.experimental.set_memory_growth(device, True)
+MODEL_PATH = './trained_model_retry.h5'
 
-model_path = './trained_model_retry.h5'
-model = load_model(model_path)
+MAX_FILE_SIZE = 5*1024*1024 # 5 mb
+IMAGE_SIZE = (128,128)
 
-class_names = [
-    'Bacterial_spot', 'Early_blight', 'Healthy', 'Late_blight', 'Septoria_leaf_spots', 'Yellow_leaf_curl_virus'
+CLASS_NAMES = [
+    "Bacterial_spot",
+    "Early_blight",
+    "Healthy",
+    "Late_blight",
+    "Septoria_leaf_spots",
+    "Yellow_leaf_curl_virus"
 ]
 
-def preprocess_image(image_path):
-    img = cv2.imread(image_path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    image = tf.keras.preprocessing.image.load_img(image_path, target_size=(128, 128)) 
-    input_arr = tf.keras.preprocessing.image.img_to_array(image)  
-    input_arr = np.array([input_arr]) 
-    return img, input_arr
+###-----------
+# Flask Application
+### ----------
 
-@app.route('/')
-def index():
-    return render_template('index.html')  # This will serve your HTML file
+app = Flask(__name__)
 
-@app.route('/api/predict', methods=['POST'])
+CORS(app)
+
+app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
+
+###-----------
+# GPU CONFIGURATION
+### ----------
+
+physical_devices = tf.config.list_physical_devices('GPU')
+
+for device in physical_devices:
+    tf.config.experimental.set_memory_growth(device, True)
+    
+###-----------
+# LOAD MODEL
+### ---------- 
+
+print("Loading Model....")
+
+model = load_model(MODEL_PATH)
+
+print("Model loaded Successfully.")
+
+###-----------
+# Image Preprocessing
+### ---------- 
+
+def preprocess_image(image_bytes):
+    image = Image.open(
+        BytesIO(image_bytes)
+    ).convert("RGB")
+    
+    image = image.resize(IMAGE_SIZE)
+    
+    image_array = np.asarray(image,dtype = np.float32)
+    
+    image_array = np.expand_dims(image_array,axis = 0)
+    
+    return image_array
+
+
+# ----------------------
+# Health Check
+# ----------------------
+
+@app.route("/health", methods=["GET"])
+def health():
+
+    return jsonify({
+        "status": "healthy",
+        "service": "PlantPulse API"
+    }), 200
+    
+# ----------------------
+# Readiness Check
+# ----------------------
+@app.route("/api/predict",methods=["POST"])
 def predict_disease():
+    
+    request_id = str(uuid.uuid4())
+    start_time = time.perf_counter()
+
     try:
-        if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
 
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
+        # ---------------------------
+        # Validate file existence
+        # ---------------------------
 
-        file_path = f"./temp_{file.filename}"
-        file.save(file_path)
+        if "file" not in request.files:
 
-        img, input_arr = preprocess_image(file_path)
+            return jsonify({
+                "error": "No file uploaded",
+                "request_id": request_id
+            }), 400
 
-        predictions = model.predict(input_arr)
-        result_index = np.argmax(predictions)
-        model_prediction = class_names[result_index]
 
-        os.remove(file_path)
+        file = request.files["file"]
+
+
+        # ----------------------
+        # Validate filename
+        # ----------------------
+
+        if file.filename == "":
+
+            return jsonify({
+                "error": "No file selected",
+                "request_id": request_id
+            }), 400
+
+
+        # ---------------------------
+        # Read image into memory
+        # ---------------------------
+
+        image_bytes = file.read()
+
+
+        if not image_bytes:
+
+            return jsonify({
+                "error": "Uploaded file is empty",
+                "request_id": request_id
+            }), 400
+
+
+        # ---------------------------
+        # Validate image
+        # ---------------------------
+
+        try:
+
+            input_array = preprocess_image(
+                image_bytes
+            )
+
+        except Exception:
+
+            return jsonify({
+                "error": "Invalid image file",
+                "request_id": request_id
+            }), 400
+
+
+        # ---------------------
+        # Model inference
+        # ---------------------
+        print("Prediction starting....")
+        predictions = model.predict(
+            input_array,
+            verbose=0
+        )
+        print("prediction done!!")
+
+        # --------------------
+        # Extract prediction
+        # --------------------
+
+        probabilities = predictions[0]
+
+        result_index = int(
+            np.argmax(probabilities)
+        )
+
+        confidence = float(
+            probabilities[result_index]
+        )
+
+        disease = CLASS_NAMES[result_index]
+
+
+        # ---------------------
+        # Calculate latency
+        # ---------------------
+
+        latency_ms = (
+            time.perf_counter() - start_time
+        ) * 1000
+
+
+        # ---------------------
+        # Response
+        # ---------------------
 
         return jsonify({
-            "disease": model_prediction,
-            "probabilities": predictions.flatten().tolist()
-        })
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            "request_id": request_id,
 
+            "prediction": {
+                "disease": disease,
+                "confidence": round(
+                    confidence,
+                    4
+                )
+            },
+
+            "probabilities": {
+                CLASS_NAMES[i]: round(
+                    float(probabilities[i]),
+                    4
+                )
+                for i in range(len(CLASS_NAMES))
+            },
+
+            "metadata": {
+                "model": "PlantPulse-CNN",
+                "image_size": "128x128",
+                "latency_ms": round(
+                    latency_ms,
+                    2
+                )
+            }
+
+        }), 200
+
+
+    except Exception:
+
+        app.logger.exception(
+            "Prediction failed | request_id=%s",
+            request_id
+        )
+
+        return jsonify({
+
+            "error": "Internal prediction error",
+
+            "request_id": request_id
+
+        }), 500
+
+# --------------------------------------------------
+# Homepage
+# --------------------------------------------------
+
+@app.route("/", methods=["GET"])
+def index():
+
+    return render_template("index.html")
+
+
+# --------------------------------------------------
+# Application Entry Point
+# --------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
 
+    app.run(
+        host="0.0.0.0",
+        port=int(
+            os.getenv("PORT", 8080)
+        )
+    )
