@@ -14,7 +14,7 @@ URL = "http://127.0.0.1:8080/api/predict"
 IMAGE_PATH = r"C:\Users\Aditya\Documents\Minor_Project\Tomato\Test\Healthy\0caff918-5807-40f2-b9e4-7dd34a7bab5d___RS_HL 0345.jpg"
 
 # Simulated concurrent users
-USER_LIST = [10, 25, 50, 100, 150, 200]
+USER_LIST = [10, 25, 50, 100]
 
 # Requests made by each user
 REQUESTS_PER_USER = [5, 10, 20, 50]

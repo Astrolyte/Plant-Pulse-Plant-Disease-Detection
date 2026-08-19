@@ -6,6 +6,8 @@ from io import BytesIO
 import tensorflow as tf
 import numpy as np
 import os, uuid, time, batched
+import batched
+
 
 ##configuration
 
@@ -25,6 +27,24 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
 physical_devices = tf.config.list_physical_devices("GPU")
 for device in physical_devices:
     tf.config.experimental.set_memory_growth(device, True)
+# --------------------------------------------------
+# Dynamic Batching
+# --------------------------------------------------
+
+@batched.dynamically(batch_size=8,timeout_ms=20)
+def predict_batch(
+    image_arrays: list[np.ndarray]
+) -> list[np.ndarray]:
+
+    # Combine individual requests into one batch
+    input_batch = np.concatenate(image_arrays,axis=0)
+
+    # One GPU inference
+    predictions = model.predict(input_batch,verbose=0)
+
+    # batched handles splitting the results
+    return predictions
+
 
 ## Load Model
 
@@ -81,12 +101,11 @@ def predict_disease():
          # Model inference
          
         print("Prediction starting....")
-        predictions = model.predict(input_array, verbose=0)
+        probabilities = predict_batch(input_array)
         print("prediction done!!")
         
-        # Extract prediction
         
-        probabilities = predictions[0]
+        # probabilities = predictions[0]
         
         result_index = int(np.argmax(probabilities))
         confidence = float(probabilities[result_index])
