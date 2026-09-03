@@ -68,8 +68,6 @@ redis_client = redis.Redis(
     host=REDIS_HOST,
     port=REDIS_PORT,
     decode_responses=True,
-    # Don't allow Redis problems to hang
-    # the prediction API indefinitely.
     socket_connect_timeout=1,
     socket_timeout=1,
 )
